@@ -5,25 +5,33 @@ import (
 	"testing"
 )
 
-type TestingFunc func(t *testing.T, name string, fixture interface{}) bool
+// Fixture represents a single row in a table-based test. It is called with the
+// descriptive name (the key associated with the fixture provided in RunTableTest)
+// and the testing apparatus.
+//
+// Returning true from Test will cause the table test run to abort early.
+type Fixture interface {
+	Test(t *testing.T, name string) (stopearly bool)
+}
 
-func TableTest(t *testing.T, m map[string]interface{}, f TestingFunc) {
+func RunTableTest(t *testing.T, m map[string]Fixture) {
 	var ord []string
 	for name := range m {
-		ord = append(name, ord)
+		ord = append(ord, name)
 	}
-	// Sort, so that table tests are initiated in deterministic order. t.Run
-	// puts each into its own goroutine, so actual execution order still depends
-	// on the scheduler.
-	sort.Stable(ord)
+
+	// Sort, so that table tests are initiated in deterministic order. Note that
+	// t.Run puts each into its own goroutine, so actual execution order still
+	// depends on the scheduler.
+	sort.Strings(ord)
 
 	for _, name := range ord {
 		fix := m[name]
 		var term bool
 		t.Run(name, func(t *testing.T) {
-			term = f(t, name, fix)
-			if term {
-				t.Log("Test returned false, stopping early")
+			term = fix.Test(t, name)
+			if term && testing.Verbose() {
+				t.Log("Fixture.Test() returned true, stopping early")
 			}
 		})
 		if term {
