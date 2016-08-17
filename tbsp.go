@@ -1,4 +1,4 @@
-package tablespoon
+package tbsp
 
 import (
 	"sort"
