@@ -1,8 +1,11 @@
-package tbsp
+package tbsp_test
 
-import "testing"
+import (
+	"github.com/sdboyer/tbsp"
+	"testing"
+)
 
-func sq(x int) int {
+func Sq(x int) int {
 	return x * x
 }
 
@@ -11,15 +14,15 @@ type sqfix struct {
 }
 
 func (fix sqfix) Test(t *testing.T, name string) bool {
-	got := sq(fix.in)
+	got := Sq(fix.in)
 	if got != fix.out {
 		t.Errorf("Expected %v when squaring %v, got %v", fix.out, fix.out, got)
 	}
 	return false
 }
 
-func TestBasicTabling(t *testing.T) {
-	table := map[string]Fixture{
+func TestSq(t *testing.T) {
+	table := map[string]tbsp.Fixture{
 		"x=1": sqfix{in: 1, out: 1},
 		"x=2": sqfix{in: 2, out: 4},
 		"x=3": sqfix{in: 3, out: 9},
@@ -27,5 +30,5 @@ func TestBasicTabling(t *testing.T) {
 		"x=5": sqfix{in: 5, out: 25},
 	}
 
-	RunTableTest(t, table)
+	tbsp.RunTableTest(t, table)
 }
